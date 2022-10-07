@@ -8,3 +8,4 @@ flask-jwt-extended
 passlib
 flask-migrate #flask-migrate is the connection between alembic and flask
 gunicorn
+psycopg2
