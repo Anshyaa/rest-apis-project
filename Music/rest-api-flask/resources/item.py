@@ -1,4 +1,3 @@
-from email import message
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from flask_jwt_extended import jwt_required, get_jwt
@@ -10,10 +9,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from db import db
 from models import ItemModel
 
-blp = Blueprint("Items", "items", description="Operations on items")
+blp = Blueprint("Items", __name__, description="Operations on items")
 
 
-@blp.route("/item/<string:item_id>")
+@blp.route("/item/<int:item_id>")
 class Item(MethodView):
     @jwt_required()
     @blp.response(200, ItemSchema)
@@ -24,8 +23,9 @@ class Item(MethodView):
     @jwt_required()
     def delete(self, item_id):
         jwt = get_jwt()
-        if not jwt.get("is_admin"):
+        if jwt.get("is_admin"):
             abort(400, message = "Admin privilage required.")
+
         item = ItemModel.query.get_or_404(item_id)
         db.session.delete(item)
         db.session.commit()
@@ -39,7 +39,7 @@ class Item(MethodView):
             item.price = item_data["price"]
             item.name = item_data["name"]
         else:
-            item = ItemModel(**item_data)
+            item = ItemModel(id = item_id, **item_data)
 
         db.session.add(item)
         db.session.commit()
